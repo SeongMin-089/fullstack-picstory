@@ -6,9 +6,10 @@ const ProtectRoute = ({children}) => {
 
     const {isAuthed} = useAuth()
 
-  return (
-    <div>ProtectRoute</div>
-  )
+    if(!isAuthed) return <Navigate to="/login" replace/>
+
+    return children
+
 }
 
 export default ProtectRoute
