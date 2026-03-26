@@ -52,7 +52,10 @@ const Header = () => {
               </li>
             ))}
           </ul>
-          <Button text="로그아웃" onClick={handleLogout} />
+          <Button 
+          text="로그아웃" 
+          backico 
+          onClick={handleLogout} />
         </div>
       </div>
     </header>
