@@ -1,34 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react'
-import './PostCreateEdit.scss'
-import './PostPagesAll.scss'
-import { useNavigate, useParams } from 'react-router-dom'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import { CATEGORY_OPTIONS } from '@/constants/category'
-import PostTag from '@/components/posts/PostTag'
-import { getPostById, updatePost } from '@/api/post.api'
+import React, { useEffect, useRef, useState } from "react"
+import "./PostCreateEdit.scss"
+import "./PostPagesAll.scss"
+import { data, useNavigate, useParams } from "react-router-dom"
+import Button from "@/components/ui/Button"
+import Input from "@/components/ui/Input"
+import { CATEGORY_OPTIONS } from "@/constants/category"
+import PostTag from "@/components/posts/PostTag"
+import { getPostById, updatePost } from "@/api/post.api"
+import { uploadImage } from "@/api/file.api"
 
 const PostEdit = () => {
   const { id } = useParams()
   const navigate = useNavigate()
 
-
-  const [category, setCategory] = useState('DAILY')
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  const [category, setCategory] = useState("DAILY")
+  const [title, setTitle] = useState("")
+  const [content, setContent] = useState("")
   const [tags, setTags] = useState([
-    { label: '기본값' },
-    { label: '추가 태그' }
+    { label: "기본값" },
+    { label: "추가 태그" },
   ])
   const fileInputRef = useRef(null)
-  const [tagInput, setTagInput] = useState('')
+  const [tagInput, setTagInput] = useState("")
   const [isAddingTag, setIsAddingTag] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [imageUrl, setImageUrl] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const handleGoBack = () => {
-
     navigate(-1)
   }
 
@@ -40,14 +39,13 @@ const PostEdit = () => {
       console.log(res)
       const post = res?.data ?? res
 
-      setCategory(post?.category ?? 'DAILY')
-      setTitle(post?.title ?? '')
-      setContent(post?.content ?? '')
-
-
+      setCategory(post?.category ?? "DAILY")
+      setTitle(post?.title ?? "")
+      setContent(post?.content ?? "")
+      setImageUrl(post?.imageUrl ?? null)
     } catch (error) {
-      console.error('게시글을 불러오지 못했습니다.', error)
-      navigate('/app')
+      console.error("게시글을 불러오지 못했습니다.", error)
+      navigate("/app")
     } finally {
       setIsLoading(false)
     }
@@ -55,16 +53,40 @@ const PostEdit = () => {
 
   useEffect(() => {
     loadPostDetail()
-
   }, [id])
+
+  const handleUploadImage = async (e) => {
+    const file = e.target.files?.[0]
+
+    if (!file) return
+
+    try {
+      const res = await uploadImage(file)
+
+      const uploaded = res?.data ?? res
+
+      setImageUrl(
+        uploaded.fileName ??
+        uploaded.fileUrl ??
+        uploaded.imageUrl ??
+        null
+      )
+
+    } catch (error) {
+      console.error("이미지 업로드 실패", error)
+    } finally {
+      e.target.value = ""
+    }
+  }
+
   const handleUpdate = async (e) => {
     e.preventDefault()
     if (!title.trim()) {
-      alert('제목을 입력하세요')
+      alert("제목을 입력하세요")
       return
     }
     if (!content.trim()) {
-      alert('내용을 입력하세요')
+      alert("내용을 입력하세요")
       return
     }
 
@@ -74,34 +96,34 @@ const PostEdit = () => {
       const payload = {
         category,
         title,
-        content
+        content,
+        imageUrl
       }
 
-      if (confirm('수정하시겠습니까?')) {
+      if (confirm("수정하시겠습니까?")) {
         await updatePost(id, payload)
-        navigate('/app')
+        navigate("/app")
       }
     } catch (error) {
-      console.error('메세지 수정 실패', error)
+      console.error("메세지 수정 실패", error)
     } finally {
       setIsSaving(false)
     }
   }
 
   return (
-    <section className='page post-section post-edit'>
+    <section className="page post-section post-edit">
       <div className="inner">
-        <form className='post-form' onSubmit={handleUpdate}>
+        <form className="post-form" onSubmit={handleUpdate}>
           <div className="post-card">
             <div className="post-field">
-              <label className='post-label'>카테고리</label>
+              <label className="post-label">카테고리</label>
               <div className="post-input-wrap">
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
                   {CATEGORY_OPTIONS.map((opt) => (
-
                     <option value={opt.value} key={opt.value}>
                       {opt.label}
                     </option>
@@ -117,7 +139,6 @@ const PostEdit = () => {
               placeholder="제목을 입력하세요"
             />
             <div className="post-tag-box">
-
               <div className="tags">
                 <PostTag tag="tag1" />
                 <PostTag tag="tag1" />
@@ -127,26 +148,50 @@ const PostEdit = () => {
                 <PostTag tag="tag1" />
                 <PostTag tag="tag1" />
                 <PostTag tag="tag1" />
-                <input type="text" className='post-tag-input' placeholder='tag를 자유롭게 입력하세요' />
-                <Button type="button" text="+ 태그 추가" className="post-tag-add" />
+                <input
+                  type="text"
+                  className="post-tag-input"
+                  placeholder="tag를 자유롭게 입력하세요"
+                />
+                <Button
+                  type="button"
+                  text="+ 태그 추가"
+                  className="post-tag-add"
+                />
               </div>
             </div>
             <div className="post-field">
-              <label className='post-label'>내용</label>
+              <label className="post-label">내용</label>
               <div className="post-input-wrap">
-                <textarea 
-                value={content}
-                onChange={(e)=>setContent(e.target.value)}
-
-                className='post-textarea' placeholder='내용을 자유롭게 입력하세요' />
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="post-textarea"
+                  placeholder="내용을 자유롭게 입력하세요"
+                />
               </div>
             </div>
             <div className="post-upload-card">
-              <div className="post-upload-placeholder">
+              <div 
+              onClick={()=>fileInputRef.current?.click()}
+              className="post-upload-placeholder">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleUploadImage}
+                  accept="image/*"
+                  className="post-uppload-input"
+                />
+                {imageUrl?(
 
-                <input type="file" accept='image/*' className='post-uppload-input' />
-                <img src="/images.png" alt="img" />
-                <p className='post-upload-title'>이미지를 업로드 하세요</p>
+                  <img src={imageUrl} alt="preview" 
+                  className='post-upload-preview' />
+                ):(
+                  <img src="/images/add.svg" alt="img" 
+                  className='post-upload-icon'/>
+
+                )}
+                <p className="post-upload-title">이미지를 업로드 하세요</p>
                 <span className="post-upload-desc">
                   클릭하거나 파일을 드래그 하여 업로드
                 </span>
@@ -160,11 +205,7 @@ const PostEdit = () => {
                 className="cancel"
                 onClick={handleGoBack}
               />
-              <Button
-                type="submit"
-                text="수정하기"
-                className="save"
-              />
+              <Button type="submit" text="수정하기" className="save" />
             </div>
           </div>
         </form>
