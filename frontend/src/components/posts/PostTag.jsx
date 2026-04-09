@@ -1,8 +1,10 @@
 import React from 'react'
-
-const PostTag = ({ tag, onClick }) => {
+import { getTagColor } from '@/hooks/useTagColor'
+const PostTag = ({ tag ,onClick}) => {
   return (
-    <span className='post-tag'>
+    <span className='post-tag'
+    style={{backgroundColor:getTagColor(tag)}}
+    >
       <span>
 
         {tag}
@@ -13,9 +15,7 @@ const PostTag = ({ tag, onClick }) => {
         e.preventDefault()
         e.stopPropagation()
         onClick?.()
-        onClick
-      }}
-      >X</button>
+        }}>X</button>
     </span>
   )
 }
