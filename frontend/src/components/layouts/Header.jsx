@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import './Header.scss'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../ui/Button'
@@ -7,6 +7,7 @@ import { useAuth } from '@/store/auth.store'
 const Header = () => {
   const navigate = useNavigate()
   const { logout } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const menus = [
     {
@@ -23,12 +24,25 @@ const Header = () => {
     }
   ]
 
+  useEffect(()=>{
+    if(!menuOpen) return
+
+    const onkey = (e)=>{
+      if(e.key==='Escape') setMenuOpen(false)
+    }
+  
+    window.addEventListener('keydown', onkey)
+
+    return ()=>window.removeEventListener('keydown',onkey)
+  },[menuOpen])
+
 
   const handleLogout = async () => {
     try {
 
       await logoutApi()
       logout()
+      setMenuOpen(false)
       navigate("/")
 
     } catch (error) {
@@ -43,7 +57,7 @@ const Header = () => {
             <img src="/images/logo.svg" alt="logo" />
           </Link>
         </h1>
-        <div className="right">
+        <div className={`right ${menuOpen? 'is-nav-open' : ''} `}>
 
           <ul>
             {menus.map((menu, i) => (
